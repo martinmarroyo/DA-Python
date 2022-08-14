@@ -1,0 +1,86 @@
+# Provides metadata necessary for ingesting and transforming our data and loading it to the database
+# Original source (replace after testing)
+# /src/python-env/data/all_anime.csv
+# /src/python-env/data/anime_stats.csv
+# /src/python-env/data/anime_scores.csv
+metadata:
+  - c:/Users/Martin/coop-da-env/data/metadata/anime_metadata.sql
+views:
+  - c:/Users/Martin/coop-da-env/data/views/latest_anime_stats.sql
+data:
+# Staging
+  all_anime:
+    source: c:/Users/Martin/coop-da-env/data/all_anime.csv
+    schema: anime_stage
+    tablename: all_anime
+    rename: 
+      id: anime_id
+      title: anime_title
+      score: "avg_score"
+    date_cols:
+      - load_date
+      - aired_from
+      - aired_to
+    dupe_index:
+      - anime_id
+    conversion:      
+      airing: boolean
+  stat:
+    source: c:/Users/Martin/coop-da-env/data/anime_stats.csv
+    schema: anime_stage
+    tablename: stats
+    date_cols:
+      - load_date
+    dupe_index: 
+      - anime_id
+  score: 
+    source: c:/Users/Martin/coop-da-env/data/anime_scores.csv
+    schema: anime_stage
+    tablename: scores
+    date_cols:
+      - load_date
+    dupe_index:
+      - anime_id
+      - score
+# Data Warehouse
+  dim_anime: 
+    source: c:/Users/Martin/coop-da-env/data/dim_anime.csv
+    schema: anime
+    tablename: dim_anime
+    columns: [
+        'anime_key','anime_id', 'anime_title', 'status', 'rating',
+        'airing', 'aired_from', 'aired_to', 'is_current','current_as_of', 
+        'expired'
+    ]
+    date_cols: ["current_as_of", "expired", "aired_from", "aired_to"]
+    conversion: 
+      airing: boolean
+      is_current: boolean
+  fact_anime_stats:
+    source: c:/Users/Martin/coop-da-env/data/fact_anime_stats.csv
+    schema: anime
+    tablename: fact_anime_stats
+    date_cols:
+      - load_date
+  fact_anime_scores:
+    source: c:/Users/Martin/coop-da-env/data/fact_anime_scores.csv
+    schema: anime
+    tablename: fact_anime_scores
+    date_cols:
+      - load_date
+  dim_planet:
+    source: c:/Users/Martin/coop-da-env/data/dim_planet.csv
+    schema: exoplanet
+    tablename: dim_planet
+    date_cols: ["current_as_of", "row_expired_date"]
+  dim_star:
+    source: c:/Users/Martin/coop-da-env/data/dim_star.csv
+    schema: exoplanet
+    tablename: dim_star
+    date_cols: ["current_as_of", "row_expired_date"]
+  fact_planet_star:
+    source: c:/Users/Martin/coop-da-env/data/fact_planet_star.csv
+    schema: exoplanet
+    tablename: fact_planet_star
+    date_cols:
+      - row_entry_date
